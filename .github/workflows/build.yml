@@ -32,11 +32,39 @@ jobs:
       - name: Build web app
         run: npm run build
 
-      - name: Add Android platform if missing
+      - name: Debug - show what build output folder exists
         run: |
-          if [ ! -d "android" ]; then
-            npx cap add android
+          echo "=== Root folder contents ==="
+          ls -la
+          echo "=== Looking for index.html ==="
+          find . -name "index.html" -not -path "*/node_modules/*" 2>/dev/null
+          echo "=== dist folder (if exists) ==="
+          ls dist/ 2>/dev/null || echo "dist/ not found"
+          echo "=== out folder (if exists) ==="
+          ls out/ 2>/dev/null || echo "out/ not found"
+          echo "=== build folder (if exists) ==="
+          ls build/ 2>/dev/null || echo "build/ not found"
+
+      - name: Ensure dist folder has index.html
+        run: |
+          if [ ! -f "dist/index.html" ]; then
+            echo "dist/index.html missing - checking alternate output dirs"
+            if [ -f "out/index.html" ]; then
+              cp -r out dist
+            elif [ -f "build/index.html" ]; then
+              cp -r build dist
+            else
+              echo "ERROR: Could not find index.html in dist, out, or build"
+              exit 1
+            fi
           fi
+          echo "dist/index.html confirmed present"
+
+      - name: Remove old android folder for clean build
+        run: rm -rf android
+
+      - name: Add Android platform
+        run: npx cap add android
 
       - name: Sync Capacitor
         run: npx cap sync android
