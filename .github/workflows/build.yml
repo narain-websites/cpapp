@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -17,10 +18,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Node 20
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
@@ -28,7 +29,7 @@ jobs:
       - name: Build web app
         run: npm run build
 
-      - name: Add Android platform
+      - name: Add Android platform if missing
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
@@ -37,12 +38,15 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build release APK
-        working-directory: android
-        run: ./gradlew assembleRelease
+      - name: Fix Gradle permissions
+        run: chmod +x android/gradlew
 
-      - name: Upload APK artifact
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: chawla-plywood-apk
-          path: android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
