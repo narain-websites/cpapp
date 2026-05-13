@@ -95,8 +95,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 p-4 lg:p-6 pb-24 lg:pb-6 overflow-x-hidden">{children}</main>
 
         {/* Bottom nav (mobile) */}
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-card border-t border-border grid grid-cols-6 h-16">
-          {NAV.map(({ to, label, icon: Icon }) => (
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-card border-t border-border grid grid-cols-5 h-16">
+          {NAV.slice(0, 5).map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
