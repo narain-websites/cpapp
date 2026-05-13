@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as IndexRouteImport } from './routes/index'
@@ -16,6 +18,16 @@ import { Route as BillingIndexRouteImport } from './routes/billing.index'
 import { Route as BillingNewRouteImport } from './routes/billing.new'
 import { Route as BillingYearNumberRouteImport } from './routes/billing.$year.$number'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsRoute = ProductsRouteImport.update({
   id: '/products',
   path: '/products',
@@ -51,6 +63,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
   '/products': typeof ProductsRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/billing/new': typeof BillingNewRoute
   '/billing/': typeof BillingIndexRoute
   '/billing/$year/$number': typeof BillingYearNumberRoute
@@ -59,6 +73,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
   '/products': typeof ProductsRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/billing/new': typeof BillingNewRoute
   '/billing': typeof BillingIndexRoute
   '/billing/$year/$number': typeof BillingYearNumberRoute
@@ -68,6 +84,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
   '/products': typeof ProductsRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/billing/new': typeof BillingNewRoute
   '/billing/': typeof BillingIndexRoute
   '/billing/$year/$number': typeof BillingYearNumberRoute
@@ -78,6 +96,8 @@ export interface FileRouteTypes {
     | '/'
     | '/customers'
     | '/products'
+    | '/reports'
+    | '/settings'
     | '/billing/new'
     | '/billing/'
     | '/billing/$year/$number'
@@ -86,6 +106,8 @@ export interface FileRouteTypes {
     | '/'
     | '/customers'
     | '/products'
+    | '/reports'
+    | '/settings'
     | '/billing/new'
     | '/billing'
     | '/billing/$year/$number'
@@ -94,6 +116,8 @@ export interface FileRouteTypes {
     | '/'
     | '/customers'
     | '/products'
+    | '/reports'
+    | '/settings'
     | '/billing/new'
     | '/billing/'
     | '/billing/$year/$number'
@@ -103,6 +127,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CustomersRoute: typeof CustomersRoute
   ProductsRoute: typeof ProductsRoute
+  ReportsRoute: typeof ReportsRoute
+  SettingsRoute: typeof SettingsRoute
   BillingNewRoute: typeof BillingNewRoute
   BillingIndexRoute: typeof BillingIndexRoute
   BillingYearNumberRoute: typeof BillingYearNumberRoute
@@ -110,6 +136,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products': {
       id: '/products'
       path: '/products'
@@ -159,6 +199,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CustomersRoute: CustomersRoute,
   ProductsRoute: ProductsRoute,
+  ReportsRoute: ReportsRoute,
+  SettingsRoute: SettingsRoute,
   BillingNewRoute: BillingNewRoute,
   BillingIndexRoute: BillingIndexRoute,
   BillingYearNumberRoute: BillingYearNumberRoute,
