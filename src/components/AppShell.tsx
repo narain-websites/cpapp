@@ -82,6 +82,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
+            <Link to="/settings" aria-label="Settings" className={`p-2 rounded-lg hover:bg-accent ${isActive("/settings") ? "text-primary" : ""}`}>
+              <SettingsIcon className="w-4 h-4" />
+            </Link>
             <button onClick={lock} aria-label="Lock" className="p-2 rounded-lg hover:bg-accent text-destructive">
               <LogOut className="w-4 h-4" />
             </button>
