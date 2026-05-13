@@ -16,6 +16,9 @@ import { computeBillTotals, makeEmptyItem, saveBill, PAYMENT_TYPES } from "@/lib
 import { downloadInvoice, printInvoice } from "@/lib/pdfGenerator";
 
 export const Route = createFileRoute("/billing/new")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    edit: search.edit ? Number(search.edit) : undefined,
+  }),
   component: () => <ClientApp><BillEditor /></ClientApp>,
 });
 
@@ -23,10 +26,11 @@ const DRAFT_KEY = "chawla_bill_draft";
 
 function BillEditor() {
   const navigate = useNavigate();
+  const { edit: editId } = Route.useSearch();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [billId, setBillId] = useState<number | undefined>(undefined);
   const [billNumber, setBillNumber] = useState<number>(0);
-  const year = new Date().getFullYear();
+  const [year, setYear] = useState<number>(new Date().getFullYear());
   const [date, setDate] = useState(todayISO());
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
