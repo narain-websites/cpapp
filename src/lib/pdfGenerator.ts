@@ -116,15 +116,16 @@ export function generateInvoicePDF(bill: Bill, settings: Settings): jsPDF {
     endY += 15;
   }
 
+  endY += 6;
   doc.setLineWidth(0.4);
-  doc.line(labelX, endY - 4, rightX, endY - 4);
-  endY += 4;
+  doc.line(labelX, endY, rightX, endY);
+  endY += 18;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.text("Grand Total:", labelX, endY);
   doc.text(rs(bill.grandTotal), rightX, endY, { align: "right" });
-  endY += 18;
+  endY += 22;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
