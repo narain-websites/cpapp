@@ -16,6 +16,9 @@ import { computeBillTotals, makeEmptyItem, saveBill, PAYMENT_TYPES } from "@/lib
 import { downloadInvoice, printInvoice } from "@/lib/pdfGenerator";
 
 export const Route = createFileRoute("/billing/new")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    edit: search.edit ? Number(search.edit) : undefined,
+  }),
   component: () => <ClientApp><BillEditor /></ClientApp>,
 });
 
@@ -23,10 +26,11 @@ const DRAFT_KEY = "chawla_bill_draft";
 
 function BillEditor() {
   const navigate = useNavigate();
+  const { edit: editId } = Route.useSearch();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [billId, setBillId] = useState<number | undefined>(undefined);
   const [billNumber, setBillNumber] = useState<number>(0);
-  const year = new Date().getFullYear();
+  const [year, setYear] = useState<number>(new Date().getFullYear());
   const [date, setDate] = useState(todayISO());
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -42,10 +46,29 @@ function BillEditor() {
   const customers = useLiveQuery(() => getDb().customers.toArray(), []) || [];
   const products = useLiveQuery(() => getDb().products.toArray(), []) || [];
 
-  // Init: load draft or new bill number
+  // Init: load existing bill (edit), draft, or fresh number
   useEffect(() => {
     (async () => {
       const s = await ensureSettings(); setSettings(s);
+      if (editId) {
+        const existing = await getDb().bills.get(editId);
+        if (existing) {
+          setBillId(existing.id);
+          setBillNumber(existing.billNumber);
+          setYear(existing.year);
+          setDate(existing.date);
+          setCustomerName(existing.customerName);
+          setCustomerPhone(existing.customerPhone);
+          setCustomerId(existing.customerId);
+          setItems(existing.items.length ? existing.items : [makeEmptyItem()]);
+          setDiscountType(existing.discountType);
+          setDiscountValue(existing.discountValue);
+          setPaid(existing.paid);
+          setPaymentType(existing.paymentType);
+          sessionStorage.removeItem(DRAFT_KEY);
+          return;
+        }
+      }
       const draftRaw = sessionStorage.getItem(DRAFT_KEY);
       if (draftRaw) {
         try {
@@ -65,7 +88,8 @@ function BillEditor() {
       }
       setBillNumber(await nextBillNumber(year));
     })();
-  }, [year]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editId]);
 
   // Auto-save draft (debounced)
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -145,12 +169,15 @@ function BillEditor() {
   const newBill = async () => {
     sessionStorage.removeItem(DRAFT_KEY);
     setBillId(undefined);
-    setBillNumber(await nextBillNumber(year));
+    const y = new Date().getFullYear();
+    setYear(y);
+    setBillNumber(await nextBillNumber(y));
     setDate(todayISO());
     setCustomerName(""); setCustomerPhone(""); setCustomerId(undefined);
     setItems([makeEmptyItem()]);
     setDiscountValue(0); setPaid(0); setPaymentType("Cash");
     setSnapSession(0);
+    if (editId) navigate({ to: "/billing/new", search: {} });
     toast.success("New bill started");
   };
 
@@ -158,7 +185,7 @@ function BillEditor() {
     <div className="space-y-4 max-w-5xl mx-auto pb-20">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">New Bill #{formatBillNo(year, billNumber)}</h1>
+          <h1 className="text-2xl font-bold">{billId ? "Edit" : "New"} Bill #{formatBillNo(year, billNumber)}</h1>
           <p className="text-xs text-muted-foreground">Auto-saved draft</p>
         </div>
         <div className="flex flex-wrap gap-2">

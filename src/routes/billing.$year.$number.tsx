@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Download, Printer, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Pencil, Printer, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ClientApp } from "@/components/ClientApp";
 import { getDb, ensureSettings, formatBillNo, type Bill, type Settings } from "@/lib/db";
@@ -50,6 +50,7 @@ function BillView() {
           <ArrowLeft className="w-4 h-4" />Back
         </Link>
         <div className="flex gap-2">
+          <Link to="/billing/new" search={{ edit: bill.id! }} className="px-3 py-2 rounded-lg border text-sm flex items-center gap-1.5"><Pencil className="w-4 h-4" />Edit</Link>
           <button onClick={() => settings && downloadInvoice(bill, settings)} className="px-3 py-2 rounded-lg border text-sm flex items-center gap-1.5"><Download className="w-4 h-4" />PDF</button>
           <button onClick={() => settings && printInvoice(bill, settings)} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm flex items-center gap-1.5"><Printer className="w-4 h-4" />Print</button>
           <button onClick={onDelete} className="px-3 py-2 rounded-lg border text-destructive text-sm flex items-center gap-1.5"><Trash2 className="w-4 h-4" />Delete</button>
