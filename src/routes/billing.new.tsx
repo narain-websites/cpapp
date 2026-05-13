@@ -169,12 +169,15 @@ function BillEditor() {
   const newBill = async () => {
     sessionStorage.removeItem(DRAFT_KEY);
     setBillId(undefined);
-    setBillNumber(await nextBillNumber(year));
+    const y = new Date().getFullYear();
+    setYear(y);
+    setBillNumber(await nextBillNumber(y));
     setDate(todayISO());
     setCustomerName(""); setCustomerPhone(""); setCustomerId(undefined);
     setItems([makeEmptyItem()]);
     setDiscountValue(0); setPaid(0); setPaymentType("Cash");
     setSnapSession(0);
+    if (editId) navigate({ to: "/billing/new", search: {} });
     toast.success("New bill started");
   };
 
@@ -182,7 +185,7 @@ function BillEditor() {
     <div className="space-y-4 max-w-5xl mx-auto pb-20">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">New Bill #{formatBillNo(year, billNumber)}</h1>
+          <h1 className="text-2xl font-bold">{billId ? "Edit" : "New"} Bill #{formatBillNo(year, billNumber)}</h1>
           <p className="text-xs text-muted-foreground">Auto-saved draft</p>
         </div>
         <div className="flex flex-wrap gap-2">
