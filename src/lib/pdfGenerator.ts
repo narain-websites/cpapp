@@ -2,51 +2,80 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Bill, Settings } from "./db";
 import { formatBillNo } from "./db";
-import { formatINR, isoToDisplay } from "./format";
+import { isoToDisplay } from "./format";
+
+function rs(n: number): string {
+  if (!Number.isFinite(n)) n = 0;
+  return "Rs. " + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 export function generateInvoicePDF(bill: Bill, settings: Settings): jsPDF {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
-  let y = 28;
+  const H = doc.internal.pageSize.getHeight();
+  const M = 36; // margin
+  let y = 32;
 
   // Top blessing
   doc.setFont("helvetica", "italic");
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.text("|| Shri Ganeshay Namaha ||", W / 2, y, { align: "center" });
+  y += 22;
+
+  // Logo top-right
+  const logoSize = 64;
+  if (settings.logoBase64) {
+    try { doc.addImage(settings.logoBase64, "PNG", W - M - logoSize, y - 6, logoSize, logoSize); } catch {}
+  }
+
+  // Firm details centered
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.text(settings.firmName, W / 2, y + 8, { align: "center" });
+
+  let cy = y + 24;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(10);
+  if (settings.tagline) {
+    doc.text(settings.tagline, W / 2, cy, { align: "center" });
+    cy += 13;
+  }
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  const addr = [settings.address1, settings.address2, settings.address3].filter(Boolean).join(", ");
+  if (addr) { doc.text(addr, W / 2, cy, { align: "center" }); cy += 12; }
+  const contactBits: string[] = [];
+  if (settings.phone) contactBits.push(`Phone: ${settings.phone}`);
+  if (settings.gst) contactBits.push(`GST: ${settings.gst}`);
+  if (contactBits.length) { doc.text(contactBits.join("   |   "), W / 2, cy, { align: "center" }); cy += 12; }
+
+  y = Math.max(cy, y + logoSize) + 10;
+
+  // Divider
+  doc.setLineWidth(0.6);
+  doc.line(M, y, W - M, y);
+  y += 16;
+
+  // Bill meta row
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text(`Bill No: ${formatBillNo(bill.year, bill.billNumber)}`, M, y);
+  doc.text(`Date: ${isoToDisplay(bill.date)}`, W - M, y, { align: "right" });
   y += 18;
 
-  // Logo + firm info (left)
-  if (settings.logoBase64) {
-    try { doc.addImage(settings.logoBase64, "PNG", 28, y, 56, 56); } catch {}
+  // Customer block
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Bill To:", M, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(bill.customerName || "—", M + 50, y);
+  y += 13;
+  if (bill.customerPhone) {
+    doc.setFontSize(9);
+    doc.text(`Ph: ${bill.customerPhone}`, M + 50, y);
+    y += 12;
   }
-  const leftX = settings.logoBase64 ? 92 : 28;
-  doc.setFont("helvetica", "bold"); doc.setFontSize(16);
-  doc.text(settings.firmName, leftX, y + 14);
-  doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-  if (settings.tagline) doc.text(settings.tagline, leftX, y + 28);
-  const addrLines = [settings.address1, settings.address2, settings.address3].filter(Boolean);
-  addrLines.forEach((l, i) => doc.text(l, leftX, y + 40 + i * 11));
-  if (settings.phone) doc.text(`Phone: ${settings.phone}`, leftX, y + 40 + addrLines.length * 11);
-  if (settings.gst) doc.text(`GST: ${settings.gst}`, leftX, y + 52 + addrLines.length * 11);
-
-  // Bill no & date (right)
-  doc.setFont("helvetica", "bold"); doc.setFontSize(11);
-  doc.text(`Bill No: ${formatBillNo(bill.year, bill.billNumber)}`, W - 28, y + 14, { align: "right" });
-  doc.setFont("helvetica", "normal");
-  doc.text(`Date: ${isoToDisplay(bill.date)}`, W - 28, y + 30, { align: "right" });
-
-  y += 100;
-  doc.setLineWidth(0.5);
-  doc.line(28, y, W - 28, y);
-  y += 14;
-
-  // Customer
-  doc.setFont("helvetica", "bold"); doc.setFontSize(10);
-  doc.text("Bill To:", 28, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(bill.customerName || "—", 70, y);
-  if (bill.customerPhone) doc.text(`Ph: ${bill.customerPhone}`, W - 28, y, { align: "right" });
-  y += 14;
+  y += 6;
 
   // Items table
   autoTable(doc, {
@@ -55,63 +84,72 @@ export function generateInvoicePDF(bill: Bill, settings: Settings): jsPDF {
     body: bill.items.map((it, i) => [
       String(i + 1),
       it.productName,
-      formatINR(it.price),
+      rs(it.price),
       String(it.qty),
-      formatINR(it.amount),
+      rs(it.amount),
     ]),
-    styles: { fontSize: 10, cellPadding: 6 },
-    headStyles: { fillColor: [140, 50, 30], textColor: 255 },
+    margin: { left: M, right: M },
+    styles: { fontSize: 10, cellPadding: 7 },
+    headStyles: { fillColor: [140, 50, 30], textColor: 255, fontStyle: "bold" },
     columnStyles: {
-      0: { cellWidth: 30, halign: "center" },
-      2: { halign: "right" },
-      3: { halign: "center" },
-      4: { halign: "right" },
+      0: { cellWidth: 32, halign: "center" },
+      2: { halign: "right", cellWidth: 90 },
+      3: { halign: "center", cellWidth: 50 },
+      4: { halign: "right", cellWidth: 100 },
     },
   });
 
   // @ts-expect-error lastAutoTable on doc
-  let endY = doc.lastAutoTable.finalY + 16;
-  const rightX = W - 28;
-  const labelX = W - 180;
+  let endY = doc.lastAutoTable.finalY + 18;
+  const rightX = W - M;
+  const labelX = W - 220;
 
-  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
   doc.text("Subtotal:", labelX, endY);
-  doc.text(formatINR(bill.subtotal), rightX, endY, { align: "right" });
-  endY += 14;
+  doc.text(rs(bill.subtotal), rightX, endY, { align: "right" });
+  endY += 15;
 
   if (bill.discountValue > 0) {
-    const disp = bill.discountType === "percent" ? `${bill.discountValue}%` : formatINR(bill.discountValue);
-    doc.text(`Discount (${disp}):`, labelX, endY);
-    doc.text("-" + formatINR(bill.subtotal - bill.grandTotal), rightX, endY, { align: "right" });
-    endY += 14;
+    doc.text("Discount:", labelX, endY);
+    doc.text("-" + rs(bill.subtotal - bill.grandTotal), rightX, endY, { align: "right" });
+    endY += 15;
   }
 
-  doc.setFont("helvetica", "bold"); doc.setFontSize(12);
-  doc.text("Grand Total:", labelX, endY);
-  doc.text(formatINR(bill.grandTotal), rightX, endY, { align: "right" });
-  endY += 16;
+  doc.setLineWidth(0.4);
+  doc.line(labelX, endY - 4, rightX, endY - 4);
+  endY += 4;
 
-  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("Grand Total:", labelX, endY);
+  doc.text(rs(bill.grandTotal), rightX, endY, { align: "right" });
+  endY += 18;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
   doc.text(`Paid (${bill.paymentType}):`, labelX, endY);
-  doc.text(formatINR(bill.paid), rightX, endY, { align: "right" });
-  endY += 14;
+  doc.text(rs(bill.paid), rightX, endY, { align: "right" });
+  endY += 15;
 
   if (bill.pending > 0) {
     doc.setTextColor(180, 30, 30);
+    doc.setFont("helvetica", "bold");
     doc.text("Pending:", labelX, endY);
-    doc.text(formatINR(bill.pending), rightX, endY, { align: "right" });
+    doc.text(rs(bill.pending), rightX, endY, { align: "right" });
     doc.setTextColor(0, 0, 0);
-    endY += 14;
+    doc.setFont("helvetica", "normal");
+    endY += 15;
   }
 
   // Footer
-  endY = Math.max(endY + 60, doc.internal.pageSize.getHeight() - 80);
-  doc.setFont("helvetica", "italic"); doc.setFontSize(10);
-  doc.text("Thank you for your business!", W / 2, endY, { align: "center" });
-  endY += 30;
-  doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-  doc.text("Authorized Signatory", W - 28, endY, { align: "right" });
-  doc.line(W - 160, endY - 4, W - 28, endY - 4);
+  const footerY = Math.max(endY + 50, H - 70);
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(11);
+  doc.text("Thank you for your business!", W / 2, footerY, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Subject to Kolhapur Judiciary only.", W / 2, footerY + 16, { align: "center" });
 
   return doc;
 }
