@@ -42,8 +42,12 @@ export function generateInvoicePDF(bill: Bill, settings: Settings): jsPDF {
   }
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  const addr = [settings.address1, settings.address2, settings.address3].filter(Boolean).join(", ");
-  if (addr) { doc.text(addr, W / 2, cy, { align: "center" }); cy += 12; }
+  for (const line of [settings.address1, settings.address2, settings.address3]) {
+    if (line && line.trim()) {
+      doc.text(line, W / 2, cy, { align: "center" });
+      cy += 12;
+    }
+  }
   const contactBits: string[] = [];
   if (settings.phone) contactBits.push(`Phone: ${settings.phone}`);
   if (settings.gst) contactBits.push(`GST: ${settings.gst}`);
