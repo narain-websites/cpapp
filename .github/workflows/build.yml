@@ -32,35 +32,12 @@ jobs:
       - name: Build web app
         run: npm run build
 
-      - name: Debug - show what build output folder exists
+      - name: Verify dist/index.html exists
         run: |
-          echo "=== Root folder contents ==="
-          ls -la
-          echo "=== Looking for index.html ==="
-          find . -name "index.html" -not -path "*/node_modules/*" 2>/dev/null
-          echo "=== dist folder (if exists) ==="
-          ls dist/ 2>/dev/null || echo "dist/ not found"
-          echo "=== out folder (if exists) ==="
-          ls out/ 2>/dev/null || echo "out/ not found"
-          echo "=== build folder (if exists) ==="
-          ls build/ 2>/dev/null || echo "build/ not found"
+          ls dist/
+          test -f dist/index.html && echo "✓ dist/index.html found" || (echo "✗ dist/index.html missing" && exit 1)
 
-      - name: Ensure dist folder has index.html
-        run: |
-          if [ ! -f "dist/index.html" ]; then
-            echo "dist/index.html missing - checking alternate output dirs"
-            if [ -f "out/index.html" ]; then
-              cp -r out dist
-            elif [ -f "build/index.html" ]; then
-              cp -r build dist
-            else
-              echo "ERROR: Could not find index.html in dist, out, or build"
-              exit 1
-            fi
-          fi
-          echo "dist/index.html confirmed present"
-
-      - name: Remove old android folder for clean build
+      - name: Remove old android folder
         run: rm -rf android
 
       - name: Add Android platform
