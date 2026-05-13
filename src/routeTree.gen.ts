@@ -13,6 +13,8 @@ import { Route as ProductsRouteImport } from './routes/products'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BillingIndexRouteImport } from './routes/billing.index'
+import { Route as BillingNewRouteImport } from './routes/billing.new'
+import { Route as BillingYearNumberRouteImport } from './routes/billing.$year.$number'
 
 const ProductsRoute = ProductsRouteImport.update({
   id: '/products',
@@ -34,39 +36,76 @@ const BillingIndexRoute = BillingIndexRouteImport.update({
   path: '/billing/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BillingNewRoute = BillingNewRouteImport.update({
+  id: '/billing/new',
+  path: '/billing/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillingYearNumberRoute = BillingYearNumberRouteImport.update({
+  id: '/billing/$year/$number',
+  path: '/billing/$year/$number',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
   '/products': typeof ProductsRoute
+  '/billing/new': typeof BillingNewRoute
   '/billing/': typeof BillingIndexRoute
+  '/billing/$year/$number': typeof BillingYearNumberRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
   '/products': typeof ProductsRoute
+  '/billing/new': typeof BillingNewRoute
   '/billing': typeof BillingIndexRoute
+  '/billing/$year/$number': typeof BillingYearNumberRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/customers': typeof CustomersRoute
   '/products': typeof ProductsRoute
+  '/billing/new': typeof BillingNewRoute
   '/billing/': typeof BillingIndexRoute
+  '/billing/$year/$number': typeof BillingYearNumberRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/customers' | '/products' | '/billing/'
+  fullPaths:
+    | '/'
+    | '/customers'
+    | '/products'
+    | '/billing/new'
+    | '/billing/'
+    | '/billing/$year/$number'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/customers' | '/products' | '/billing'
-  id: '__root__' | '/' | '/customers' | '/products' | '/billing/'
+  to:
+    | '/'
+    | '/customers'
+    | '/products'
+    | '/billing/new'
+    | '/billing'
+    | '/billing/$year/$number'
+  id:
+    | '__root__'
+    | '/'
+    | '/customers'
+    | '/products'
+    | '/billing/new'
+    | '/billing/'
+    | '/billing/$year/$number'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CustomersRoute: typeof CustomersRoute
   ProductsRoute: typeof ProductsRoute
+  BillingNewRoute: typeof BillingNewRoute
   BillingIndexRoute: typeof BillingIndexRoute
+  BillingYearNumberRoute: typeof BillingYearNumberRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +138,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/billing/new': {
+      id: '/billing/new'
+      path: '/billing/new'
+      fullPath: '/billing/new'
+      preLoaderRoute: typeof BillingNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing/$year/$number': {
+      id: '/billing/$year/$number'
+      path: '/billing/$year/$number'
+      fullPath: '/billing/$year/$number'
+      preLoaderRoute: typeof BillingYearNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -106,7 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CustomersRoute: CustomersRoute,
   ProductsRoute: ProductsRoute,
+  BillingNewRoute: BillingNewRoute,
   BillingIndexRoute: BillingIndexRoute,
+  BillingYearNumberRoute: BillingYearNumberRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
