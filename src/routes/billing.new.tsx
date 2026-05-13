@@ -46,10 +46,29 @@ function BillEditor() {
   const customers = useLiveQuery(() => getDb().customers.toArray(), []) || [];
   const products = useLiveQuery(() => getDb().products.toArray(), []) || [];
 
-  // Init: load draft or new bill number
+  // Init: load existing bill (edit), draft, or fresh number
   useEffect(() => {
     (async () => {
       const s = await ensureSettings(); setSettings(s);
+      if (editId) {
+        const existing = await getDb().bills.get(editId);
+        if (existing) {
+          setBillId(existing.id);
+          setBillNumber(existing.billNumber);
+          setYear(existing.year);
+          setDate(existing.date);
+          setCustomerName(existing.customerName);
+          setCustomerPhone(existing.customerPhone);
+          setCustomerId(existing.customerId);
+          setItems(existing.items.length ? existing.items : [makeEmptyItem()]);
+          setDiscountType(existing.discountType);
+          setDiscountValue(existing.discountValue);
+          setPaid(existing.paid);
+          setPaymentType(existing.paymentType);
+          sessionStorage.removeItem(DRAFT_KEY);
+          return;
+        }
+      }
       const draftRaw = sessionStorage.getItem(DRAFT_KEY);
       if (draftRaw) {
         try {
@@ -69,7 +88,8 @@ function BillEditor() {
       }
       setBillNumber(await nextBillNumber(year));
     })();
-  }, [year]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editId]);
 
   // Auto-save draft (debounced)
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
