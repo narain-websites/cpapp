@@ -9,38 +9,161 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ProductsRouteImport } from './routes/products'
+import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BillingIndexRouteImport } from './routes/billing.index'
+import { Route as BillingNewRouteImport } from './routes/billing.new'
+import { Route as BillingYearNumberRouteImport } from './routes/billing.$year.$number'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsRoute = ProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomersRoute = CustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BillingIndexRoute = BillingIndexRouteImport.update({
+  id: '/billing/',
+  path: '/billing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillingNewRoute = BillingNewRouteImport.update({
+  id: '/billing/new',
+  path: '/billing/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillingYearNumberRoute = BillingYearNumberRouteImport.update({
+  id: '/billing/$year/$number',
+  path: '/billing/$year/$number',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/customers': typeof CustomersRoute
+  '/products': typeof ProductsRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
+  '/billing/new': typeof BillingNewRoute
+  '/billing/': typeof BillingIndexRoute
+  '/billing/$year/$number': typeof BillingYearNumberRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/customers': typeof CustomersRoute
+  '/products': typeof ProductsRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
+  '/billing/new': typeof BillingNewRoute
+  '/billing': typeof BillingIndexRoute
+  '/billing/$year/$number': typeof BillingYearNumberRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/customers': typeof CustomersRoute
+  '/products': typeof ProductsRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
+  '/billing/new': typeof BillingNewRoute
+  '/billing/': typeof BillingIndexRoute
+  '/billing/$year/$number': typeof BillingYearNumberRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/customers'
+    | '/products'
+    | '/reports'
+    | '/settings'
+    | '/billing/new'
+    | '/billing/'
+    | '/billing/$year/$number'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/customers'
+    | '/products'
+    | '/reports'
+    | '/settings'
+    | '/billing/new'
+    | '/billing'
+    | '/billing/$year/$number'
+  id:
+    | '__root__'
+    | '/'
+    | '/customers'
+    | '/products'
+    | '/reports'
+    | '/settings'
+    | '/billing/new'
+    | '/billing/'
+    | '/billing/$year/$number'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CustomersRoute: typeof CustomersRoute
+  ProductsRoute: typeof ProductsRoute
+  ReportsRoute: typeof ReportsRoute
+  SettingsRoute: typeof SettingsRoute
+  BillingNewRoute: typeof BillingNewRoute
+  BillingIndexRoute: typeof BillingIndexRoute
+  BillingYearNumberRoute: typeof BillingYearNumberRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products': {
+      id: '/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customers': {
+      id: '/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof CustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +171,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/billing/': {
+      id: '/billing/'
+      path: '/billing'
+      fullPath: '/billing/'
+      preLoaderRoute: typeof BillingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing/new': {
+      id: '/billing/new'
+      path: '/billing/new'
+      fullPath: '/billing/new'
+      preLoaderRoute: typeof BillingNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing/$year/$number': {
+      id: '/billing/$year/$number'
+      path: '/billing/$year/$number'
+      fullPath: '/billing/$year/$number'
+      preLoaderRoute: typeof BillingYearNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CustomersRoute: CustomersRoute,
+  ProductsRoute: ProductsRoute,
+  ReportsRoute: ReportsRoute,
+  SettingsRoute: SettingsRoute,
+  BillingNewRoute: BillingNewRoute,
+  BillingIndexRoute: BillingIndexRoute,
+  BillingYearNumberRoute: BillingYearNumberRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
